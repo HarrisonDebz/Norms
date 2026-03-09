@@ -19,15 +19,31 @@
 body {
     font-family: 'Outfit', sans-serif;
     color: var(--text-color);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+.scroll-container {
+    height: 100vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+.full-page {
     height: 100vh;
     width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    padding: 20px;
 }
 
 @keyframes gradientBG {
@@ -49,7 +65,8 @@ body {
 .container {
     z-index: 10;
     width: 90%;
-    max-width: 500px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .card {
@@ -61,8 +78,6 @@ body {
     padding: 3rem 2rem;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transform: translateY(0);
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation: float 6s ease-in-out infinite;
 }
 
@@ -72,9 +87,7 @@ body {
 }
 
 .hidden {
-    display: none;
-    opacity: 0;
-    pointer-events: none;
+    display: none !important;
 }
 
 .emoji-container {
@@ -85,9 +98,18 @@ body {
 
 .title {
     font-family: 'Pacifico', cursive;
-    font-size: 2.5rem;
+    font-size: 3rem;
     margin-bottom: 1rem;
     line-height: 1.2;
+}
+
+.section-title {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.5rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
 
 .highlight {
@@ -96,10 +118,66 @@ body {
 }
 
 .subtitle {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 300;
     margin-bottom: 2.5rem;
-    color: #666;
+    color: #444;
+}
+
+/* Moments Grid */
+.moments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.moment-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+.moment-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.moment-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Reasons Container */
+.reasons-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.reason-tag {
+    background: var(--glass-bg);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
+    cursor: default;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.reason-tag:hover {
+    background: var(--primary-pink);
+    color: white;
+    transform: scale(1.1) rotate(2deg);
 }
 
 .button-group {
@@ -137,12 +215,50 @@ body {
 .btn-no {
     background: #f0f0f0;
     color: #888;
-    position: relative; /* Crucial for move logic */
+    position: relative;
+}
+
+/* Music Player */
+.music-player {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 100;
+}
+
+.music-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+    transform: scale(1.1);
+    background: white;
+}
+
+.music-btn.playing .music-icon {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
 /* Celebration Styles */
 .celebration-gif {
-    width: 200px;
+    width: 250px;
     border-radius: 20px;
     margin-top: 2rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -155,6 +271,7 @@ body {
     font-size: 1.5rem;
     pointer-events: none;
     animation: heartFloat linear forwards;
+    z-index: 5;
 }
 
 @keyframes heartFloat {
@@ -169,15 +286,25 @@ body {
 }
 
 /* Mobile Responsive */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     .title {
         font-size: 2rem;
     }
+    .section-title {
+        font-size: 1.8rem;
+    }
     .card {
-        padding: 2.5rem 1.5rem;
+        padding: 2rem 1rem;
     }
     .btn {
-        padding: 10px 28px;
+        padding: 10px 24px;
         font-size: 1rem;
+    }
+    .moments-grid {
+        grid-template-columns: 1fr;
+    }
+    .music-player {
+        bottom: 20px;
+        left: 20px;
     }
 }

@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Trigger Confetti
         const duration = 15 * 1000;
         const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
 
         function randomInRange(min, max) {
             return Math.random() * (max - min) + min;
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const particleCount = 50 * (timeLeft / duration);
-            // since particles fall down, start a bit higher than random
             confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
             confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
         }, 250);
@@ -74,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const opacity = 0.3 + Math.random() * 0.5;
 
         heart.style.left = `${startX}vw`;
+        heart.style.bottom = `-50px`; // Start below screen
         heart.style.animationDuration = `${duration}s`;
         heart.style.fontSize = `${size}px`;
         heart.style.opacity = opacity;
@@ -86,6 +86,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }, duration * 1000);
     }
 
+    // 4. Music Player Logic
+    const musicBtn = document.getElementById('music-toggle');
+    const bgMusic = document.getElementById('bg-music');
+    let isPlaying = false;
+
+    const toggleMusic = () => {
+        if (isPlaying) {
+            bgMusic.pause();
+            musicBtn.classList.remove('playing');
+            musicBtn.querySelector('.music-icon').innerHTML = '🔇';
+        } else {
+            bgMusic.play().catch(e => console.log("Autoplay prevented, waiting for interaction"));
+            musicBtn.classList.add('playing');
+            musicBtn.querySelector('.music-icon').innerHTML = '🎵';
+        }
+        isPlaying = !isPlaying;
+    };
+
+    musicBtn.addEventListener('click', toggleMusic);
+
+    // Try to play on first scroll or click to bypass autoplay restrictions
+    const startOnInteraction = () => {
+        if (!isPlaying) {
+            toggleMusic();
+        }
+        window.removeEventListener('scroll', startOnInteraction);
+        window.removeEventListener('click', startOnInteraction);
+    };
+
+    window.addEventListener('scroll', startOnInteraction, { once: true });
+    // Note: click on music button is handled by toggleMusic directly
+
     // Initial background hearts
     for (let i = 0; i < 15; i++) {
         setTimeout(createHeart, Math.random() * 3000);
@@ -93,4 +125,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Periodically add new hearts to background
     setInterval(createHeart, 2000);
+
+    // Interactive Cards - Add subtle click feedback
+    const cards = document.querySelectorAll('.moment-card, .reason-tag');
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 150);
+            
+            // Emoji burst on card click
+            const rect = card.getBoundingClientRect();
+            for(let i=0; i<5; i++) {
+                createMiniHeart(rect.left + rect.width/2, rect.top + rect.height/2);
+            }
+        });
+    });
+
+    function createMiniHeart(x, y) {
+        const mini = document.createElement('div');
+        mini.innerHTML = '❤️';
+        mini.style.position = 'fixed';
+        mini.style.left = `${x}px`;
+        mini.style.top = `${y}px`;
+        mini.style.pointerEvents = 'none';
+        mini.style.transition = 'all 0.6s ease-out';
+        mini.style.zIndex = '2000';
+        document.body.appendChild(mini);
+
+        setTimeout(() => {
+            mini.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px) scale(0)`;
+            mini.style.opacity = '0';
+        }, 10);
+
+        setTimeout(() => mini.remove(), 700);
+    }
 });
