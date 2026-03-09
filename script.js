@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createHeart() {
         const heart = document.createElement('div');
         heart.classList.add('heart');
-        heart.innerHTML = '❤️';
+        heart.innerHTML = Math.random() > 0.5 ? '💙' : '🤍';
         
         // Random properties
         const startX = Math.random() * 100;
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const opacity = 0.3 + Math.random() * 0.5;
 
         heart.style.left = `${startX}vw`;
-        heart.style.bottom = `-50px`; // Start below screen
+        heart.style.bottom = `-20px`; // Start just below screen
         heart.style.animationDuration = `${duration}s`;
         heart.style.fontSize = `${size}px`;
         heart.style.opacity = opacity;
@@ -89,22 +89,58 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Music Player Logic
     const musicBtn = document.getElementById('music-toggle');
     const bgMusic = document.getElementById('bg-music');
+    const entryOverlay = document.getElementById('entry-overlay');
+    const enterBtn = document.getElementById('enter-btn');
+    const userNameInput = document.getElementById('user-name');
     let isPlaying = false;
 
-    const toggleMusic = () => {
-        if (isPlaying) {
+    const toggleMusic = (forcePlay = false) => {
+        if (isPlaying && !forcePlay) {
             bgMusic.pause();
             musicBtn.classList.remove('playing');
             musicBtn.querySelector('.music-icon').innerHTML = '🔇 Music Paused';
+            isPlaying = false;
         } else {
-            bgMusic.play().catch(e => console.log("Autoplay prevented, waiting for interaction"));
-            musicBtn.classList.add('playing');
-            musicBtn.querySelector('.music-icon').innerHTML = '🎵 Love Song';
+            bgMusic.play().then(() => {
+                musicBtn.classList.add('playing');
+                musicBtn.querySelector('.music-icon').innerHTML = '🎵 Love Song';
+                isPlaying = true;
+            }).catch(e => {
+                console.log("Autoplay prevented, waiting for interaction");
+                isPlaying = false;
+            });
         }
-        isPlaying = !isPlaying;
     };
 
-    musicBtn.addEventListener('click', toggleMusic);
+    enterBtn.addEventListener('click', () => {
+        const name = userNameInput.value.trim();
+        const errorMsg = document.getElementById('error-msg');
+        
+        if (name.toLowerCase() === 'bridget') {
+            errorMsg.style.display = 'none';
+            // Personalize the letter
+            const letterHeader = document.querySelector('.letter-header');
+            if (letterHeader) letterHeader.innerText = `Dearest Bridget,`;
+            
+            entryOverlay.classList.add('fade-out');
+            toggleMusic(true); // Start music on enter
+
+            // Start frequent hearts after enter
+            setInterval(createHeart, 400);
+            
+            // Allow scrolling after enter
+            document.body.style.overflow = 'auto';
+            document.querySelector('.scroll-container').style.overflowY = 'auto';
+        } else {
+            errorMsg.style.display = 'block';
+            userNameInput.style.borderColor = '#ff4d4d';
+            setTimeout(() => {
+                userNameInput.style.borderColor = '';
+            }, 1000);
+        }
+    });
+
+    musicBtn.addEventListener('click', () => toggleMusic());
 
     // 5. Scroll & Side Dots Logic
     const scrollContainer = document.querySelector('.scroll-container');
@@ -123,11 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === current);
         });
-
-        // Try start music on first scroll
-        if (!isPlaying && scrollContainer.scrollTop > 50) {
-            toggleMusic();
-        }
     }, { passive: true });
 
     dots.forEach(dot => {
@@ -137,13 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Initial background hearts
-    for (let i = 0; i < 15; i++) {
-        setTimeout(createHeart, Math.random() * 3000);
+    // Initial background hearts (pre-enter)
+    for (let i = 0; i < 20; i++) {
+        setTimeout(createHeart, Math.random() * 2000);
     }
     
-    // Periodically add new hearts to background
-    setInterval(createHeart, 2000);
+    // Disable scrolling until "Entered"
+    document.body.style.overflow = 'hidden';
+    document.querySelector('.scroll-container').style.overflowY = 'hidden';
+
+    // Heart generator with better interval
+    setInterval(createHeart, 1200); 
 
     // Interactive Cards - Add subtle click feedback
     const cards = document.querySelectorAll('.moment-card, .reason-tag');
@@ -164,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createMiniHeart(x, y) {
         const mini = document.createElement('div');
-        mini.innerHTML = '❤️';
+        mini.innerHTML = Math.random() > 0.5 ? '💙' : '🤍';
         mini.style.position = 'fixed';
         mini.style.left = `${x}px`;
         mini.style.top = `${y}px`;
