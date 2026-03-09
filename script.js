@@ -95,28 +95,47 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPlaying) {
             bgMusic.pause();
             musicBtn.classList.remove('playing');
-            musicBtn.querySelector('.music-icon').innerHTML = '🔇';
+            musicBtn.querySelector('.music-icon').innerHTML = '🔇 Music Paused';
         } else {
             bgMusic.play().catch(e => console.log("Autoplay prevented, waiting for interaction"));
             musicBtn.classList.add('playing');
-            musicBtn.querySelector('.music-icon').innerHTML = '🎵';
+            musicBtn.querySelector('.music-icon').innerHTML = '🎵 Love Song';
         }
         isPlaying = !isPlaying;
     };
 
     musicBtn.addEventListener('click', toggleMusic);
 
-    // Try to play on first scroll or click to bypass autoplay restrictions
-    const startOnInteraction = () => {
-        if (!isPlaying) {
+    // 5. Scroll & Side Dots Logic
+    const scrollContainer = document.querySelector('.scroll-container');
+    const sections = document.querySelectorAll('.full-page');
+    const dots = document.querySelectorAll('.dot');
+
+    scrollContainer.addEventListener('scroll', () => {
+        let current = 0;
+        sections.forEach((section, index) => {
+            const sectionTop = section.offsetTop;
+            if (scrollContainer.scrollTop >= sectionTop - window.innerHeight / 2) {
+                current = index;
+            }
+        });
+
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === current);
+        });
+
+        // Try start music on first scroll
+        if (!isPlaying && scrollContainer.scrollTop > 50) {
             toggleMusic();
         }
-        window.removeEventListener('scroll', startOnInteraction);
-        window.removeEventListener('click', startOnInteraction);
-    };
+    }, { passive: true });
 
-    window.addEventListener('scroll', startOnInteraction, { once: true });
-    // Note: click on music button is handled by toggleMusic directly
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            const sectionIndex = dot.getAttribute('data-section');
+            sections[sectionIndex].scrollIntoView({ behavior: 'smooth' });
+        });
+    });
 
     // Initial background hearts
     for (let i = 0; i < 15; i++) {
